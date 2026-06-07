@@ -11,10 +11,11 @@ type Troop struct {
 	MoveSpeed   float64 `json:"moveSpeed"`
 	IsMelee     bool    `json:"is_melee"`
 	AttackRange float64 `json:"attack_range"`
+	MovePath    []*Cell `json:"move_path"`
 	TargetID    string  `json:"target_id"`
 }
 
-type Structures struct {
+type Structure struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
 	X           float64 `json:"x"`
@@ -27,6 +28,13 @@ type Structures struct {
 }
 
 type BattleState struct {
-	Troops     map[string]*Troop      `json:"troops"`
-	Structures map[string]*Structures `json:"buildings"`
+	Troops     map[string]*Troop     `json:"troops"`
+	Structures map[string]*Structure `json:"buildings"`
+	Grid       [][]*Cell             `json:"grid"`
+}
+
+type Cell struct {
+	X    int  `json:"x"`
+	Y    int  `json:"y"`
+	Wall bool `json:"wall"`
 }

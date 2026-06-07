@@ -8,6 +8,7 @@ import (
 func updateTroop(troop *models.Troop, state *models.BattleState) {
 	if troop.TargetID == "" {
 		troop.TargetID = findNearestTarget(troop.X, troop.Y, true, state)
+		troop.MovePath = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
 	}
 	targetDistance := findDistance(troop, state.Structures[troop.TargetID])
 	attackRange := 1.0
@@ -15,25 +16,50 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 		attackRange = troop.AttackRange
 	}
 	if targetDistance <= attackRange {
-		//Attack the target
+		damageStructure(state.Structures[troop.TargetID], troop, troop.Damage, state)
 		return
 	}
 	//find path to target using a*
 	//move <movespeed> steps to target
 }
 
-func updateStructure(structure *models.Structures, state *models.BattleState) {
+func updateStructure(structure *models.Structure, state *models.BattleState) {
 	if structure.TargetID == "" {
 		structure.TargetID = findNearestTarget(structure.X, structure.Y, false, state)
 	}
 	targetDistance := findDistance(state.Troops[structure.TargetID], structure)
 	if targetDistance <= structure.AttackRange {
-		//Attack the target
+		attackTroop(state.Troops[structure.TargetID], structure, structure.Damage, state)
 	}
 }
 
-func findDistance(troop *models.Troop, structure *models.Structures) float64 {
-	return math.Hypot(troop.X-structure.X, troop.Y-structure.Y)
+func damageStructure(structure *models.Structure, source *models.Troop, damage int, state *models.BattleState) {
+	structure.HP -= damage
+	if structure.HP <= 0 {
+		destroyStructure(structure, source, state)
+	}
+}
+
+func attackTroop(troop *models.Troop, source *models.Structure, damage int, state *models.BattleState) {
+	troop.HP -= damage
+	if troop.HP <= 0 {
+		//Add entry in battlelog
+		source.TargetID = ""
+		delete(state.Troops, troop.ID)
+	}
+}
+
+func destroyStructure(structure *models.Structure, source *models.Troop, state *models.BattleState) {
+	//Add entry in battlelog
+	if structure.Name == "Wall" {
+		removeWallFromGrid(structure, state)
+	}
+	for _, troop := range state.Troops {
+		if troop.TargetID == structure.ID {
+			troop.TargetID = ""
+		}
+	}
+	delete(state.Structures, structure.ID)
 }
 
 func findNearestTarget(posX, posY float64, isAttacker bool, state *models.BattleState) string {

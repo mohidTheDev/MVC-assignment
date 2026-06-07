@@ -6,6 +6,12 @@ import (
 )
 
 func StartBattle(state *models.BattleState) {
+	//Fetch village layout and troops from DB
+	for _, structure := range state.Structures {
+		if structure.Name == "Wall" {
+			addWallToGrid(structure, state)
+		}
+	}
 	go runBattleLoop(state)
 }
 
@@ -40,4 +46,12 @@ func isBattleOver(state *models.BattleState) bool {
 		return true
 	}
 	return false
+}
+
+func addWallToGrid(wall *models.Structure, state *models.BattleState) {
+	state.Grid[int(wall.X)][int(wall.Y)].Wall = true
+}
+
+func removeWallFromGrid(wall *models.Structure, state *models.BattleState) {
+	state.Grid[int(wall.X)][int(wall.Y)].Wall = false
 }
