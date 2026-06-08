@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"coclone/models"
+	"fmt"
 	"math"
 )
 
@@ -19,8 +20,23 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 		damageStructure(state.Structures[troop.TargetID], troop, troop.Damage, state)
 		return
 	}
-	//find path to target using a*
-	//move <movespeed> steps to target
+
+	if len(troop.MovePath) > 0 {
+		steps := int(troop.MoveSpeed)
+
+		if steps > len(troop.MovePath) {
+			steps = len(troop.MovePath)
+		}
+
+		newPos := troop.MovePath[steps-1]
+
+		troop.X = float64(newPos.X)
+		troop.Y = float64(newPos.Y)
+
+		troop.MovePath = troop.MovePath[steps:]
+
+		fmt.Printf("%s %s moved to X:%.1f Y:%.1f\n", troop.Name, troop.ID, troop.X, troop.Y)
+	}
 }
 
 func updateStructure(structure *models.Structure, state *models.BattleState) {
@@ -44,6 +60,7 @@ func attackTroop(troop *models.Troop, source *models.Structure, damage int, stat
 	troop.HP -= damage
 	if troop.HP <= 0 {
 		//Add entry in battlelog
+		fmt.Printf("%s %s destroyed by %s %s\n", troop.Name, troop.ID, source.Name, source.ID)
 		source.TargetID = ""
 		delete(state.Troops, troop.ID)
 	}
@@ -51,6 +68,7 @@ func attackTroop(troop *models.Troop, source *models.Structure, damage int, stat
 
 func destroyStructure(structure *models.Structure, source *models.Troop, state *models.BattleState) {
 	//Add entry in battlelog
+	fmt.Printf("%s %s destroyed by %s %s\n", structure.Name, structure.ID, source.Name, source.ID)
 	if structure.Name == "Wall" {
 		removeWallFromGrid(structure, state)
 	}

@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"coclone/models"
+	"fmt"
 	"time"
 )
 
 func StartBattle(state *models.BattleState) {
 	//Fetch village layout and troops from DB
-
+	initiateVillage(state)
+	fmt.Println("Starting Battle")
 	go runBattleLoop(state)
 }
 
@@ -22,6 +24,7 @@ func runBattleLoop(state *models.BattleState) {
 			update(state)
 
 			if isBattleOver(state) {
+				fmt.Println("Battle Over")
 				return
 			}
 		}
@@ -103,7 +106,7 @@ func initiateVillage(state *models.BattleState) {
 		HP:          30,
 		MaxHP:       30,
 		Damage:      15,
-		MoveSpeed:   1.5,
+		MoveSpeed:   2,
 		IsMelee:     false,
 		AttackRange: 3,
 	}
