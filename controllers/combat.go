@@ -11,6 +11,11 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 		troop.TargetID = findNearestTarget(troop.X, troop.Y, true, state)
 		troop.MovePath = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
 	}
+	targetStructure := state.Structures[troop.TargetID]
+	if targetStructure == nil {
+		troop.TargetID = ""
+		return
+	}
 	targetDistance := findDistance(troop, state.Structures[troop.TargetID])
 	attackRange := 1.0
 	if !troop.IsMelee {
@@ -42,6 +47,11 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 func updateStructure(structure *models.Structure, state *models.BattleState) {
 	if structure.TargetID == "" {
 		structure.TargetID = findNearestTarget(structure.X, structure.Y, false, state)
+	}
+	targetTroop := state.Troops[structure.TargetID]
+	if targetTroop == nil {
+		structure.TargetID = ""
+		return
 	}
 	targetDistance := findDistance(state.Troops[structure.TargetID], structure)
 	if targetDistance <= structure.AttackRange {
