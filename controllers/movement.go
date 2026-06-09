@@ -26,7 +26,7 @@ type aNode struct {
 	g, h, f int
 }
 
-func aStar(startX, startY, targetX, targetY int, state *models.BattleState) []*models.Cell {
+func aStar(startX, startY, targetX, targetY int, state *models.BattleState) ([]*models.Cell, string) {
 	grid := state.Grid
 
 	type pos [2]int
@@ -46,6 +46,8 @@ func aStar(startX, startY, targetX, targetY int, state *models.BattleState) []*m
 
 	dirs := [8][2]int{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}
 
+	var blockingWallID string
+	minWallH := 1000
 	for len(openSet) > 0 {
 		var current *aNode
 		var currentPos pos
@@ -66,7 +68,7 @@ func aStar(startX, startY, targetX, targetY int, state *models.BattleState) []*m
 		closedSet[currentPos] = true
 
 		if currentPos[0] == targetX && currentPos[1] == targetY {
-			return buildPath(current)
+			return buildPath(current), ""
 		}
 
 		if current.h < closest.h {
@@ -78,7 +80,16 @@ func aStar(startX, startY, targetX, targetY int, state *models.BattleState) []*m
 			ny := currentPos[1] + d[1]
 			np := pos{nx, ny}
 
-			if nx < 0 || nx >= len(grid) || ny < 0 || ny >= len(grid[nx]) || grid[nx][ny].Wall || closedSet[np] {
+			if nx < 0 || nx >= len(grid) || ny < 0 || ny >= len(grid[nx]) || closedSet[np] {
+				continue
+			}
+
+			if grid[nx][ny].Wall {
+				wallH := calcH(nx, ny, targetX, targetY)
+				if wallH < minWallH {
+					minWallH = wallH
+					blockingWallID = grid[nx][ny].StructureID
+				}
 				continue
 			}
 
@@ -102,7 +113,7 @@ func aStar(startX, startY, targetX, targetY int, state *models.BattleState) []*m
 		}
 	}
 
-	return buildPath(closest)
+	return buildPath(closest), blockingWallID
 }
 
 func calcH(x1, y1, x2, y2 int) int {

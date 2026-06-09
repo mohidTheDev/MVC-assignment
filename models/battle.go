@@ -34,7 +34,8 @@ type BattleState struct {
 }
 
 type Cell struct {
-	X    int  `json:"x"`
-	Y    int  `json:"y"`
-	Wall bool `json:"wall"`
+	X           int    `json:"x"`
+	Y           int    `json:"y"`
+	Wall        bool   `json:"wall"`
+	StructureID string `json:"structure_id,omitempty"`
 }

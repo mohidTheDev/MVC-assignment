@@ -8,8 +8,13 @@ import (
 
 func updateTroop(troop *models.Troop, state *models.BattleState) {
 	if troop.TargetID == "" {
+		blockingWallID := ""
 		troop.TargetID = findNearestTarget(troop.X, troop.Y, true, state)
-		troop.MovePath = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
+		troop.MovePath, blockingWallID = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
+
+		if blockingWallID != "" {
+			troop.TargetID = blockingWallID
+		}
 	}
 	targetStructure := state.Structures[troop.TargetID]
 	if targetStructure == nil {
@@ -71,6 +76,7 @@ func attackTroop(troop *models.Troop, source *models.Structure, damage int, stat
 	if troop.HP <= 0 {
 		//Add entry in battlelog
 		fmt.Printf("%s %s destroyed by %s %s\n", troop.Name, troop.ID, source.Name, source.ID)
+		fmt.Printf("Target was %s %s\n", state.Structures[troop.TargetID].Name, troop.TargetID)
 		source.TargetID = ""
 		delete(state.Troops, troop.ID)
 	}
@@ -95,6 +101,9 @@ func findNearestTarget(posX, posY float64, isAttacker bool, state *models.Battle
 		minDistance := 1000.0
 		var closestTargetID string
 		for _, structure := range state.Structures {
+			if structure.Name == "Wall" {
+				continue
+			}
 			distance := math.Hypot(posX-structure.X, posY-structure.Y)
 			if distance < minDistance {
 				minDistance = distance
