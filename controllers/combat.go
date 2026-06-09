@@ -58,9 +58,7 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 }
 
 func updateStructure(structure *models.Structure, state *models.BattleState) {
-	if structure.TargetID == "" {
-		structure.TargetID = findNearestTarget(structure.X, structure.Y, false, state)
-	}
+	structure.TargetID = findNearestTarget(structure.X, structure.Y, false, state)
 	targetTroop := state.Troops[structure.TargetID]
 	if targetTroop == nil {
 		structure.TargetID = ""
