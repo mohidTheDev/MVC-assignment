@@ -10,8 +10,12 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 	if troop.TargetID == "" {
 		blockingWallID := ""
 		troop.TargetID = findNearestTarget(troop.X, troop.Y, true, state)
-		troop.MovePath, blockingWallID = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
 
+		if troop.TargetID == "" {
+			return
+		}
+
+		troop.MovePath, blockingWallID = aStar(int(troop.X), int(troop.Y), int(state.Structures[troop.TargetID].X), int(state.Structures[troop.TargetID].Y), state)
 		if blockingWallID != "" {
 			troop.TargetID = blockingWallID
 		}
@@ -32,20 +36,24 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 	}
 
 	if len(troop.MovePath) > 0 {
-		steps := int(troop.MoveSpeed)
+		nextStep := troop.MovePath[0]
+		targetX := float64(nextStep.X)
+		targetY := float64(nextStep.Y)
 
-		if steps > len(troop.MovePath) {
-			steps = len(troop.MovePath)
+		dx := targetX - troop.X
+		dy := targetY - troop.Y
+		distance := math.Hypot(dx, dy)
+
+		dx /= distance
+		dy /= distance
+
+		if distance < troop.MoveSpeed {
+			troop.MovePath = troop.MovePath[1:]
+			fmt.Printf("%s %s moved to X:%.1f Y:%.1f\n", troop.Name, troop.ID, troop.X, troop.Y)
+			return
 		}
-
-		newPos := troop.MovePath[steps-1]
-
-		troop.X = float64(newPos.X)
-		troop.Y = float64(newPos.Y)
-
-		troop.MovePath = troop.MovePath[steps:]
-
-		fmt.Printf("%s %s moved to X:%.1f Y:%.1f\n", troop.Name, troop.ID, troop.X, troop.Y)
+		troop.X += dx * troop.MoveSpeed
+		troop.Y += dy * troop.MoveSpeed
 	}
 }
 

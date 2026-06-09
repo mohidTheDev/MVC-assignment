@@ -94,7 +94,7 @@ func initiateVillage(state *models.BattleState) {
 		HP:          50,
 		MaxHP:       50,
 		Damage:      10,
-		MoveSpeed:   1,
+		MoveSpeed:   0.15,
 		IsMelee:     true,
 		AttackRange: 1,
 	}
@@ -106,7 +106,7 @@ func initiateVillage(state *models.BattleState) {
 		HP:          30,
 		MaxHP:       30,
 		Damage:      15,
-		MoveSpeed:   2,
+		MoveSpeed:   0.25,
 		IsMelee:     false,
 		AttackRange: 3,
 	}
@@ -118,7 +118,7 @@ func initiateVillage(state *models.BattleState) {
 		HP:          50,
 		MaxHP:       50,
 		Damage:      10,
-		MoveSpeed:   1,
+		MoveSpeed:   0.15,
 		IsMelee:     true,
 		AttackRange: 1,
 	}
