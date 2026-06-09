@@ -41,7 +41,14 @@ func update(state *models.BattleState) {
 }
 
 func isBattleOver(state *models.BattleState) bool {
-	if len(state.Structures) == 0 || len(state.Troops) == 0 {
+	structuresRemaining := false
+	for _, structure := range state.Structures {
+		if structure.Name != "Wall" {
+			structuresRemaining = true
+			break
+		}
+	}
+	if structuresRemaining == false || len(state.Troops) == 0 {
 		return true
 	}
 	return false

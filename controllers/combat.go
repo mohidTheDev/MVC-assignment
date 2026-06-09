@@ -49,7 +49,7 @@ func updateTroop(troop *models.Troop, state *models.BattleState) {
 
 		if distance < troop.MoveSpeed {
 			troop.MovePath = troop.MovePath[1:]
-			fmt.Printf("%s %s moved to X:%.1f Y:%.1f\n", troop.Name, troop.ID, troop.X, troop.Y)
+			fmt.Printf("%s %s (%d) moved to X:%.1f Y:%.1f\n", troop.Name, troop.ID, troop.HP, troop.X, troop.Y)
 			return
 		}
 		troop.X += dx * troop.MoveSpeed
@@ -92,7 +92,7 @@ func attackTroop(troop *models.Troop, source *models.Structure, damage int, stat
 
 func destroyStructure(structure *models.Structure, source *models.Troop, state *models.BattleState) {
 	//Add entry in battlelog
-	fmt.Printf("%s %s destroyed by %s %s\n", structure.Name, structure.ID, source.Name, source.ID)
+	fmt.Printf("%s %s destroyed by %s %s %d\n", structure.Name, structure.ID, source.Name, source.ID, source.HP)
 	if structure.Name == "Wall" {
 		removeWallFromGrid(structure, state)
 	}
