@@ -24,5 +24,5 @@ func Connect() {
 		log.Fatal("Failed to ping the database! Is Docker running? Error: ", err)
 	}
 
-	fmt.Println("✅ Successfully connected to PostgreSQL!")
+	fmt.Println("Successfully connected to PostgreSQL!")
 }

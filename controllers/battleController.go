@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"coclone/database"
 	"coclone/models"
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 )
 
@@ -55,79 +58,116 @@ func isBattleOver(state *models.BattleState) bool {
 }
 
 func initiateVillage(state *models.BattleState) {
+	//Fix users for testing. Later change according to battle
+	defendingUser := "mohid_test"
+
+	//Modify query and models to include other attributes of defenses later
+	structureQuery := `
+		SELECT 
+			pb.Placement_ID, pb.Name, pb.PositionX, pb.PositionY,
+			bls.HP,
+			COALESCE(d.Damage, 0) AS Damage,
+			COALESCE(d.Range, 0) AS AttackRange
+		FROM Placed_Buildings pb
+		JOIN Buildings_Level_Specific bls 
+			ON pb.Name = bls.Name AND pb.Level = bls.Level
+		LEFT JOIN Defenses d 
+			ON bls.Name = d.Name AND bls.Level = d.Level
+		WHERE pb.Player_Username = $1
+	`
+
+	rows, err := database.DB.Query(structureQuery, defendingUser)
+	if err != nil {
+		log.Println("Error fetching village layout:", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var name string
+		var x, y float64
+		var hp, damage, attackRange int
+
+		err := rows.Scan(&id, &name, &x, &y, &hp, &damage, &attackRange)
+		if err != nil {
+			log.Println("Error reading structure row:", err)
+			continue
+		}
+
+		strID := strconv.Itoa(id)
+
+		state.Structures[strID] = &models.Structure{
+			ID:          strID,
+			Name:        name,
+			X:           x,
+			Y:           y,
+			HP:          hp,
+			MaxHP:       hp,
+			Damage:      damage,
+			AttackRange: float64(attackRange),
+		}
+	}
+
 	for _, structure := range state.Structures {
 		if structure.Name == "Wall" {
 			addWallToGrid(structure, state)
 		}
 	}
-	// Get village buildings from database
 
-	// Dummy data for testing
-	state.Structures["1"] = &models.Structure{
-		ID:    "1",
-		Name:  "Wall",
-		X:     5,
-		Y:     5,
-		HP:    100,
-		MaxHP: 100,
-	}
-	state.Structures["2"] = &models.Structure{
-		ID:          "2",
-		Name:        "Cannon",
-		X:           7,
-		Y:           7,
-		Damage:      20,
-		AttackRange: 3,
-		HP:          150,
-		MaxHP:       150,
-	}
-	state.Structures["3"] = &models.Structure{
-		ID:          "3",
-		Name:        "Cannon",
-		X:           9,
-		Y:           9,
-		Damage:      20,
-		AttackRange: 3,
-		HP:          150,
-		MaxHP:       150,
-	}
-
+	//For testing, fixing the username here
 	//For the sake of testing, we will add some troops here. In real implementation, troops will be added when player deploys them
-	state.Troops["1"] = &models.Troop{
-		ID:          "1",
-		Name:        "Barbarian",
-		X:           0,
-		Y:           0,
-		HP:          50,
-		MaxHP:       50,
-		Damage:      10,
-		MoveSpeed:   0.15,
-		IsMelee:     true,
-		AttackRange: 1,
+	attackingUser := "mohid_test2"
+	troopQuery := `
+		SELECT a.Name, a.Quantity, cld.HP, cld.Damage, cld.Projectile_Range, c.Walkspeed, c.Attack_Type
+		FROM Army a
+		JOIN Characters c ON a.Name = c.Name
+		JOIN Character_Level_Dependent cld ON a.Name = cld.Name AND a.Level = cld.Level
+		WHERE a.Player_Username = $1
+	`
+
+	troopRows, err := database.DB.Query(troopQuery, attackingUser)
+	if err != nil {
+		log.Println("Error fetching army:", err)
+		return
 	}
-	state.Troops["2"] = &models.Troop{
-		ID:          "2",
-		Name:        "Archer",
-		X:           0,
-		Y:           1,
-		HP:          30,
-		MaxHP:       30,
-		Damage:      15,
-		MoveSpeed:   0.25,
-		IsMelee:     false,
-		AttackRange: 3,
-	}
-	state.Troops["3"] = &models.Troop{
-		ID:          "3",
-		Name:        "Barbarian",
-		X:           0,
-		Y:           2,
-		HP:          50,
-		MaxHP:       50,
-		Damage:      10,
-		MoveSpeed:   0.15,
-		IsMelee:     true,
-		AttackRange: 1,
+	defer troopRows.Close()
+
+	troopCounter := 1
+
+	for troopRows.Next() {
+		var name string
+		var quantity, hp, damage, projRange, walkspeed int
+		var attackType string
+
+		err := troopRows.Scan(&name, &quantity, &hp, &damage, &projRange, &walkspeed, &attackType)
+		if err != nil {
+			log.Println("Error reading troop row:", err)
+			continue
+		}
+
+		for i := 0; i < quantity; i++ {
+			strID := fmt.Sprintf("t_%d", troopCounter)
+
+			isMelee := true
+			if attackType != "Melee" {
+				isMelee = false
+			}
+
+			state.Troops[strID] = &models.Troop{
+				ID:          strID,
+				Name:        name,
+				X:           float64(2*i + 1),
+				Y:           float64(2*i + 1),
+				HP:          hp,
+				MaxHP:       hp,
+				Damage:      damage,
+				MoveSpeed:   float64(walkspeed) / 100.0,
+				IsMelee:     isMelee,
+				AttackRange: float64(projRange),
+			}
+			troopCounter++
+		}
 	}
 }
 

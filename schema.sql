@@ -2,7 +2,7 @@ CREATE TYPE BuildingType AS ENUM ('Defenses', 'Resource_Generators', 'Resource_S
 CREATE TYPE ResourceType AS ENUM ('Gold', 'Elixir'); 
 CREATE TYPE MovementType AS ENUM ('Ground', 'Air'); 
 CREATE TYPE AttackType AS ENUM ('Melee', 'Ranged'); 
-CREATE TYPE ProjectileType AS ENUM ('Arrow', 'Fireball'); 
+CREATE TYPE ProjectileType AS ENUM ('Arrow', 'Fireball', 'Cannonball'); 
 CREATE TYPE BattleResult AS ENUM ('Victory', 'Defeat'); 
 CREATE TYPE BattleAction AS ENUM ('Killed', 'Destroyed'); 
 CREATE TYPE TargetingType AS ENUM ('Single', 'Area'); 
@@ -107,6 +107,7 @@ CREATE TABLE Defenses (
     Name VARCHAR(50),
     Level INT,
     Projectile_Type ProjectileType, 
+    Damage INT NOT NULL,
     Range INT NOT NULL,
     Targeting_Type TargetingType, 
     Projectile_AOE_Range INT,
