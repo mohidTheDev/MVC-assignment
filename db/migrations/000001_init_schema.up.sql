@@ -6,7 +6,7 @@ CREATE TYPE ProjectileType AS ENUM ('Arrow', 'Fireball', 'Cannonball');
 CREATE TYPE BattleResult AS ENUM ('Victory', 'Defeat'); 
 CREATE TYPE BattleAction AS ENUM ('Killed', 'Destroyed'); 
 CREATE TYPE TargetingType AS ENUM ('Single', 'Area'); 
-CREATE TYPE SpecialType AS ENUM ('Town Hall', 'Barracks', "Army Camp"); 
+CREATE TYPE SpecialType AS ENUM ('Town Hall', 'Barracks', 'Army Camp'); 
 
 -- BASE TABLES
 
