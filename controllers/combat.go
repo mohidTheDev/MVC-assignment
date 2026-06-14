@@ -82,7 +82,6 @@ func attackTroop(troop *models.Troop, source *models.Structure, damage int, stat
 	if troop.HP <= 0 {
 		//Add entry in battlelog
 		fmt.Printf("%s %s destroyed by %s %s\n", troop.Name, troop.ID, source.Name, source.ID)
-		fmt.Printf("Target was %s %s\n", state.Structures[troop.TargetID].Name, troop.TargetID)
 		source.TargetID = ""
 		delete(state.Troops, troop.ID)
 	}
